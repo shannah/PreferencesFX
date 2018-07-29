@@ -6,6 +6,7 @@ import com.dlsc.preferencesfx.history.view.HistoryDialog;
 import com.dlsc.preferencesfx.model.PreferencesFxModel;
 import com.dlsc.preferencesfx.util.StorageHandler;
 import com.dlsc.preferencesfx.util.Constants;
+import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
@@ -37,6 +38,9 @@ public class PreferencesFxDialog extends DialogPane {
   private boolean saveSettings;
   private ButtonType closeWindowBtnType = ButtonType.CLOSE;
   private ButtonType cancelBtnType = ButtonType.CANCEL;
+  private ButtonType applyBtnType = ButtonType.APPLY;
+  private ButtonType okBtnType = new ButtonType("OK");
+  
 
   /**
    * Initializes the {@link DialogPane} which shows the PreferencesFX window.
@@ -83,7 +87,15 @@ public class PreferencesFxDialog extends DialogPane {
   }
 
   private void setupDialogClose() {
+    
     dialog.setOnCloseRequest(e -> {
+      System.out.println("Close request");
+      PreferencesFxEvent closeEvt = PreferencesFxEvent.preferencesBeforeCloseEvent();
+      model.fireEvent(closeEvt);
+      if (closeEvt.isConsumed()) {
+          e.consume();
+          return;
+      }
       if (persistWindowState) {
         saveWindowState();
       }
@@ -144,6 +156,14 @@ public class PreferencesFxDialog extends DialogPane {
         model.saveSettingValues();
       }
       model.fireEvent(PreferencesFxEvent.preferencesNotSavedEvent());
+    });
+    closeBtn.addEventFilter(ActionEvent.ACTION, e->{
+        PreferencesFxEvent evt = PreferencesFxEvent.preferencesBeforeCloseEvent();
+        model.fireEvent(evt);
+        if (evt.isConsumed()) {
+            // If we consume the event, then we should cancel the action.
+            e.consume();
+        }
     });
     closeBtn.setOnAction(event -> {
       LOGGER.trace("Close Button was pressed");
