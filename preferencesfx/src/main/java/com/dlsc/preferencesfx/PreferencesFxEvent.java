@@ -20,6 +20,8 @@ public class PreferencesFxEvent extends Event {
   public static final EventType<PreferencesFxEvent> EVENT_PREFERENCES_NOT_SAVED = new EventType<>(ANY, "EVENT_PREFERENCES_NOT_SAVED");
   
   public static final EventType<PreferencesFxEvent> EVENT_PREFERENCES_BEFORE_CLOSE = new EventType<>(ANY, "EVENT_PREFERENCES_BEFORE_CLOSE");
+  public static final EventType<PreferencesFxEvent> EVENT_PREFERENCES_BEFORE_CANCEL = new EventType<>(ANY, "EVENT_PREFERENCES_BEFORE_CANCEL");
+  public static final EventType<PreferencesFxEvent> EVENT_PREFERENCES_APPLY = new EventType<>(ANY, "EVENT_PREFERENCES_APPLY");
 
   /**
    * Creates a new instance of {@code PreferencesFxEvent} with event type set to {@code EVENT_PREFERENCES_SAVED}.
@@ -41,6 +43,14 @@ public class PreferencesFxEvent extends Event {
   public static PreferencesFxEvent preferencesBeforeCloseEvent() {
       return new PreferencesFxEvent(EVENT_PREFERENCES_BEFORE_CLOSE);
   }
+  
+  public static PreferencesFxEvent preferencesBeforeCancelEvent() {
+      return new PreferencesFxEvent(EVENT_PREFERENCES_BEFORE_CANCEL);
+  }
+
+    public static PreferencesFxEvent preferencesApplyEvent() {
+        return new PreferencesFxEvent(EVENT_PREFERENCES_APPLY);
+    }
 
   private PreferencesFxEvent(EventType<? extends Event> eventType) {
     super(eventType);

@@ -36,7 +36,7 @@ public class PreferencesFxDialog extends DialogPane {
   private StorageHandler storageHandler;
   private boolean persistWindowState;
   private boolean saveSettings;
-  private ButtonType closeWindowBtnType = ButtonType.CLOSE;
+  private ButtonType closeWindowBtnType = ButtonType.OK;
   private ButtonType cancelBtnType = ButtonType.CANCEL;
   private ButtonType applyBtnType = ButtonType.APPLY;
   private ButtonType okBtnType = new ButtonType("OK");
@@ -81,14 +81,23 @@ public class PreferencesFxDialog extends DialogPane {
   private void layoutForm() {
     dialog.setTitle("PreferencesFx");
     dialog.setResizable(true);
-    getButtonTypes().addAll(closeWindowBtnType, cancelBtnType);
+    getButtonTypes().addAll(closeWindowBtnType, applyBtnType, cancelBtnType);
     dialog.setDialogPane(this);
     setContent(preferencesFxView);
   }
 
   private void setupDialogClose() {
-    
+    getScene().getWindow().setOnCloseRequest(e->{
+        System.out.println("In close event");
+        PreferencesFxEvent closeEvt = PreferencesFxEvent.preferencesBeforeCloseEvent();
+        model.fireEvent(closeEvt);
+        if (closeEvt.isConsumed()) {
+            e.consume();
+            return;
+        }
+    });
     dialog.setOnCloseRequest(e -> {
+        
       System.out.println("Close request");
       PreferencesFxEvent closeEvt = PreferencesFxEvent.preferencesBeforeCloseEvent();
       model.fireEvent(closeEvt);
@@ -144,10 +153,34 @@ public class PreferencesFxDialog extends DialogPane {
 
   private void setupButtons() {
     LOGGER.trace("Setting Buttons up");
+    
     final Button closeBtn = (Button) lookupButton(closeWindowBtnType);
     final Button cancelBtn = (Button) lookupButton(cancelBtnType);
+    final Button applyBtn = (Button) lookupButton(applyBtnType);
 
     History history = model.getHistory();
+    
+    applyBtn.addEventFilter(ActionEvent.ACTION, e->{
+        e.consume();
+        PreferencesFxEvent evt = PreferencesFxEvent.preferencesApplyEvent();
+        model.fireEvent(evt);
+        if (evt.isConsumed()) {
+            return;
+        }
+        LOGGER.trace("Apply Button was pressed");
+        history.clear(false);
+        
+    });
+
+    
+    cancelBtn.addEventFilter(ActionEvent.ACTION, e->{
+        PreferencesFxEvent evt = PreferencesFxEvent.preferencesBeforeCancelEvent();
+        model.fireEvent(evt);
+        if (evt.isConsumed()) {
+            e.consume();
+        }
+    });
+    
     cancelBtn.setOnAction(event -> {
       LOGGER.trace("Cancel Button was pressed");
       history.clear(true);
